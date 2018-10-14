@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Log 2 Web</title>
+
+    <style>
+        div {
+            border-left: 3px;
+            border-color: blue;
+            background-color: aquamarine;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 align="center">Log to WEB using webSockets</h1>
+    <br />
+    <div id="app"></div>
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    'use strict'
+    const socket = io();
+
+    socket.on('message', (data) => {
+
+        let app = document.getElementById('app');
+
+        app.innerHTML += `>> ${data.message}</br>`;
+
+    })
+</script>
+
+
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Listas Desplegables</title>
+</head>
+
+<body>
+
+    <h2 align='center'>Listas Desplegables con Node.Js</h2>
+    <fieldset>
+        <legend>Ubigeo.</legend>
+        <label for="sEstado">Estado:</label>
+        <select name="sEstado" id="sEstado"></select>
+
+        <label for="sMunicipios">Municipio:</label>
+        <select name="sMunicipio" id="sMunicipio"></select>
+
+        <label for="sParroquia">Parroquia:</label>
+        <select name="sParroquia" id="sParroquia"></select>
+
+    </fieldset>
+
+    </br>
+
+    <input type="button" id="bTest" value="Test">
+    
+    <div id="app" align="center"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./app.js"></script>
+    <script type="text/javascript">
+        var socket = io();
+        var opt = '';
+
+        bTest = document.getElementById('bTest');
+        app = document.getElementById('app');
+
+        sEstado = document.getElementById('sEstado');
+        sMunicipio = document.getElementById('sMunicipio');
+        sParroquia = document.getElementById('sParroquia');
+
+        // Llenado del SELECT Estado al iniciar la página
+        socket.on('estados', data => {
+            data.forEach((element, index) => {
+                (index == 11) ? opt = true: opt = '';
+                sEstado.options[index] = new Option(element.estado, element.id, '', opt);
+            })
+            // Emite un evento para buscar los municipios según el Estado
+            socket.emit('municipios', {'id': sEstado.value});
+        })
+        // Llenado del SELECT Municipios 
+        socket.on('municipios', data => {
+            data.forEach((element, index) => sMunicipio.options[index] = new Option(element.municipio, element.id));
+            // Emite un evento para buscar las parroquias segun el Municipio
+            socket.emit('parroquias', {'id': sMunicipio.value})
+        })
+        // Llenado del SELECT de las Parroquias
+        socket.on('parroquias', data => {
+            data.forEach((element, index) => sParroquia.options[index] = new Option(element.parroquia, element.id));
+        })
+
+        // Sockets de PRUEBA***********************
+        // EMITIENDO
+        bTest.addEventListener('click', () => { 
+            socket.emit('test', {'mensaje' : 'Hola NodeJs'});
+        })
+        // RECIBIENDO
+        socket.on('clock', data => {
+            app.innerHTML = `<h1>${data}</h1>`
+        })
+
+        // Eventos al cambiar los SELECT
+        sEstado.addEventListener("change", () => {socket.emit('municipios', {'id': sEstado.value})});
+        sMunicipio.addEventListener("change", () => {socket.emit('parroquias', {'id': sMunicipio.value})});
+    </script>
+
+</body>
+
+</html>

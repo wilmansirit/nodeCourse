@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WebSocket Test</title>
+</head>
+
+<body>
+
+    <h2>WebSocket Test</h2>
+
+    <div id="output"></div>
+
+    <script language="javascript" type="text/javascript">
+        // var wsUri = "ws://10.0.0.102:81/, ['esp8266']";
+        // var wsUri = "ws://echo.websocket.org";
+        var wsUri = "ws://10.0.0.101:8080";
+        var output;
+
+        function init() {
+            output = document.getElementById("output");
+            testWebSocket();
+        }
+
+        function testWebSocket() {
+            websocket = new WebSocket(wsUri);
+            websocket.onopen = (evt) => onOpen(evt);
+            websocket.onclose = (evt) => onClose(evt);
+            websocket.onmessage = (evt) => onMessage(evt);
+            websocket.onerror = (evt) => onError(evt);
+        }
+
+        function onOpen(evt) {
+            writeToScreen("CONNECTED");
+            doSend("Hi, I'm a new User connected..!");           
+        }
+        
+        function onClose(evt) {
+            writeToScreen("DISCONNECTED");
+        }
+        
+        function onMessage(evt) {
+            writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+            websocket.close();
+            console.log('Message from Server: ' + evt.data);            
+        }
+
+        function onError(evt) {
+            writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+        }
+
+        function doSend(message) {
+            writeToScreen("SENT: " + message);
+            console.log('Message from Client: ' + message);            
+            websocket.send(message);
+        }
+
+        function writeToScreen(message) {
+            var pre = document.createElement("p");
+            pre.style.wordWrap = "break-word";
+            pre.innerHTML = message;
+            output.appendChild(pre);
+        }
+
+        window.addEventListener("load", init, false);
+    </script>
+</body>
+
+</html>

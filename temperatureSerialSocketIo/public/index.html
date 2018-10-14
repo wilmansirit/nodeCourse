@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Temperature</title>
+    <link href='https://fonts.googleapis.com/css?family=Nunito' rel='stylesheet'>
+
+    <style>
+        .content {
+            max-width: 800px;
+            height: 400px;
+            margin: auto;
+        }
+
+        #app {
+            font-size: 30px;
+            text-align: center
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            font-size: 22px;
+            margin: 10;
+            background: #F2F2F2;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+
+        <h3 align="center">Enviroment Temperature</h3>
+
+        <div id="app"></div>
+        <canvas id="temperature"></canvas>
+
+        <hr>
+
+        <div>
+            Slider: 
+            <input type="range" name="pwmRange" id="pwmRange" min="0" max="255">
+            <div id="pwm"></div>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+    <script src="./socket.io/socket.io.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.slim.js"></script> -->
+    <script>
+        socket = io()
+
+        let counter = 0,
+            pwmRange = document.getElementById("pwmRange"),
+            pwm = document.getElementById("pwm");
+
+
+
+        socket.on('temperature', function (temp) {
+            document.getElementById("app").innerHTML = `${temp.celsius}°C`
+            
+            temperature.data.labels.push(temp.time);
+            counter++;
+            
+            if (counter > 50) temperature.data.labels.shift();
+            
+            temperature.data.datasets.forEach(element => {
+                element.data.push(temp.celsius)
+                if (counter > 50) element.data.shift();
+            });
+            
+            temperature.update();
+            
+        })
+        
+        
+        pwmRange.addEventListener('input', function () {
+
+            let data = pwmRange.value;
+            document.getElementById("pwm").innerText = data;
+            // Send to the server
+            socket.emit('slider', data);
+
+        })
+
+        socket.on('error', (err) => {
+            console.log(`Error..! ${err}`);
+        })
+        // ************************************CHART********************************************
+
+        var ctx = document.getElementById("temperature").getContext('2d');
+
+        var temperature = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    // backgroundColor: "#dcdcdc",
+                    borderCapStyle: 'round',
+                    borderColor: '#808080',
+                    // borderDash: [5, 5],
+                    borderWidth: 1,
+                    data: [],
+                    fill: true,
+                    label: 'Temperature',
+                    steppedLine: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    display: true,
+                },
+                hover: {
+                    mode: 'label'
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time'
+                        }
+                    }],
+
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Temp. °C'
+                        },
+                        ticks: {
+                            suggestedMin: 20,
+                            suggestedMax: 40,
+                            stepSize: 5,
+                            beginAtZero: false
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'Cabudare - Lara'
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
